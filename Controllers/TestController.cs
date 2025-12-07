@@ -12,9 +12,9 @@ public class TestController : ControllerBase
     ];
 
     [HttpGet(Name = "GetTestData")]
-    public IEnumerable<WeatherForecast> Get()
+    public IEnumerable<TestData> Get()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        return Enumerable.Range(1, 5).Select(index => new TestData
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             TemperatureC = Random.Shared.Next(-20, 55),
