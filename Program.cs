@@ -1,3 +1,6 @@
+const string apiTitle = "IoT Fullstack WebApi";
+const string apiVersion = "v1";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,22 +9,24 @@ builder.Services.AddControllers();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new()
+    options.SwaggerDoc(apiVersion, new ()
     {
-        Title = "IoT Fullstack WebApi",
-        Version = "v1",
-        Description = "API a nice demo"
+        Title = apiTitle,
+        Version = apiVersion,
+        Description = ""
     });
 });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Serve the Swagger UI at the app root ("/") by setting RoutePrefix to empty.
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint($"/swagger/{apiVersion}/swagger.json", $"{apiTitle} {apiVersion}");
+    options.RoutePrefix = string.Empty; // serve UI at application root
+});
 
 app.UseHttpsRedirection();
 
