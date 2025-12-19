@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web.Resource;
 
 namespace webapi.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("[controller]")]
 public class TestController : ControllerBase
@@ -12,6 +15,10 @@ public class TestController : ControllerBase
     ];
 
     [HttpGet(Name = "GetTestData")]
+    [RequiredScopeOrAppPermission(
+        RequiredScopesConfigurationKey = "AzureAD:Scopes:Read",
+        RequiredAppPermissionsConfigurationKey = "AzureAD:AppPermissions:Read"
+    )]
     public IEnumerable<TestData> Get()
     {
         return Enumerable.Range(1, 5).Select(index => new TestData
