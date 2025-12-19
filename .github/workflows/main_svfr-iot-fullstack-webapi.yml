@@ -55,11 +55,17 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A7DF7185924D4F66881567489550CCFB }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_E9B21F2C2682402FBFE06A022EE29F3A }}
 
+      - name: Test
+        run: |
+          pwd
+          ls -la
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'svfr-iot-fullstack-webapi'
           slot-name: 'Production'
-          package: .
+          package: ./WebApi.WebApi
+          
           
