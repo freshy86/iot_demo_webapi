@@ -61,5 +61,4 @@ jobs:
         with:
           app-name: 'svfr-iot-fullstack-webapi'
           slot-name: 'Production'
-          package: ./.net-app
-          
+          package: .
