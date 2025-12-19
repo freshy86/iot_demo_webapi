@@ -1,4 +1,4 @@
-const string apiTitle = "IoT Demo Fullstack WebApi";
+const string apiTitle = "IoT Fullstack Demo WebApi";
 const string apiVersion = "v1";
 
 var builder = WebApplication.CreateBuilder(args);
