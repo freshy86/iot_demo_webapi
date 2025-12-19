@@ -32,20 +32,12 @@ jobs:
       - name: Test with dotnet
         run: dotnet test --no-build --logger trx
 
-      - name: Generate test report
-        uses: dorny/test-reporter@v2
-        if: ${{ !cancelled() }}       # run this step even if previous step failed
-        with:
-          name: webapi tests           
-          path: WebApi.Tests/TestResults/*.trx    
-          reporter: dotnet-trx
-
       - name: Upload test report
         uses: actions/upload-artifact@v4  
         if: ${{ !cancelled() }}           
         with:
           name: test-results
-          path: jest-junit.xml
+          path: WebApi.Tests/TestResults/*.trx 
 
       - name: dotnet publish webapi
         run: dotnet publish ${{ env.WEBAPI_PROJECT_FILE }} -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -62,10 +54,10 @@ jobs:
     steps:
     - uses: dorny/test-reporter@v2
       with:
-        artifact: test-results            # artifact name
-        name: JEST Tests                  # Name of the check run which will be created
-        path: '*.xml'                     # Path to test results (inside artifact .zip)
-        reporter: jest-junit              # Format of test results
+        artifact: test-results
+        name: webapi tests           
+        path: WebApi.Tests/TestResults/*.trx    
+        reporter: dotnet-trx
   
   deploy:
     runs-on: ubuntu-latest
