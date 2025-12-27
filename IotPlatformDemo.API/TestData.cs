@@ -1,4 +1,4 @@
-namespace webapi;
+namespace IotPlatformDemo.API;
 
 public class TestData
 {
