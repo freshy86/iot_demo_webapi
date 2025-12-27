@@ -27,7 +27,7 @@ public class DeviceController : ControllerBase
         Device newDevice = new Device(configId);
         var addedDevice = _registryManager.AddDeviceAsync(newDevice).GetAwaiter().GetResult();
 
-        Console.WriteLine($"Device ID: {addedDevice.Id}");
-        Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
+        Console.WriteLine($"Added new IoT device with ID: {addedDevice.Id}");
+        //Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
     }
 }
