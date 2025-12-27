@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
+using webapi;
 
-namespace webapi.Controllers;
+namespace IotPlatformDemo.API.Controllers;
 
 [Authorize]
 [ApiController]
