@@ -1,28 +1,28 @@
 using System.Collections.Concurrent;
+using IotPlatformDemo.Domain;
 using IotPlatformDemo.Domain.Container;
-using IotPlatformDemo.Domain.Events;
 using Microsoft.Azure.Cosmos;
 
 namespace IotPlatformDemo.Application.EventStore;
 
 public class CosmosDbEventStore(CosmosClient cosmosClient, string databaseName) : IEventStore
 {
-    private readonly ConcurrentDictionary<string, Container> _containerRegistry = new();
+    private readonly ConcurrentDictionary<ContainerType, Container> _containerRegistry = new();
 
-    private Container GetContainerForObject(IContainerObject containerObject)
+    private Container GetContainerForEvent(Event eventToAdd)
     {
-        if (_containerRegistry.TryGetValue(containerObject.ContainerName, out var value)) return value;
+        if (_containerRegistry.TryGetValue(eventToAdd.TargetContainer, out var value)) return value;
         value = cosmosClient.GetContainer(
-            databaseName, containerObject.ContainerName);
-        _containerRegistry[containerObject.ContainerName] = value;
+            databaseName, eventToAdd.TargetContainer.ToString());
+        _containerRegistry[eventToAdd.TargetContainer] = value;
         return value;
     }
     
-    public async Task Append(IEvent newEvent)
+    public async Task Append(Event eventToAdd)
     {
-        var container = GetContainerForObject(newEvent);
-        PartitionKey partitionKey = new(newEvent.PartitionKey);
-        DataObject<IEvent> dataObject = new($"{newEvent.Id}", partitionKey.ToString(), newEvent, "deviceEvent");
+        var container = GetContainerForEvent(eventToAdd);
+        DataObject<Event> dataObject = new($"{eventToAdd.Id}", eventToAdd.PartitionKey, eventToAdd, "deviceEvent");
+        PartitionKey partitionKey = new(dataObject.PartitionKey);
         await container.CreateItemAsync(dataObject, partitionKey).ConfigureAwait(false);
     }
 }

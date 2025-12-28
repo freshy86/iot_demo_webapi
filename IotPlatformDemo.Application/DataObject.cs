@@ -1,4 +1,3 @@
-using IotPlatformDemo.Domain;
 using Newtonsoft.Json;
 
 namespace IotPlatformDemo.Application;

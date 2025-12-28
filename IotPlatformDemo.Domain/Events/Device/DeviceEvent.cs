@@ -4,11 +4,8 @@ using Newtonsoft.Json;
 
 namespace IotPlatformDemo.Domain.Events.Device;
 
-public abstract class DeviceEvent(string action, string deviceId) : DeviceContainerObject(deviceId), IEvent
+public class DeviceEvent(string action, string deviceId) : Event(ContainerType.Devices, deviceId, action, nameof(DeviceEvent))
 {
-    public Guid Id { get; } = Guid.NewGuid();
     public string DeviceId { get; } = deviceId;
-    public string Action { get; } = action;
-    public string Name => nameof(DeviceEvent);
     [JsonProperty] private DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
 }
