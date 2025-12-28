@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace IotPlatformDemo.Domain.Container;
 
-public abstract class DeviceContainerObject : IContainerObject
+public abstract class DeviceContainerObject(string partitionKey) : IContainerObject
 {
-    public string ContainerName => "Devices";
-    public string PartitionKey => "/deviceId";
+    [JsonIgnore] public string ContainerName => "devices";
+    public string PartitionKey { get; } = partitionKey;
 }

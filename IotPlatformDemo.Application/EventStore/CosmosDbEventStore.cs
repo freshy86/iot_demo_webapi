@@ -18,10 +18,11 @@ public class CosmosDbEventStore(CosmosClient cosmosClient, string databaseName) 
         return value;
     }
     
-    public async Task Append<T>(T newEvent) where T : IEvent
+    public async Task Append(IEvent newEvent)
     {
         var container = GetContainerForObject(newEvent);
-        var response = await container.CreateItemAsync(new DataObject($"{newEvent.Id}",
-            newEvent, "deviceEvent")).ConfigureAwait(false);
+        DataObject dataObject = new($"{newEvent}", newEvent, "deviceEvent");
+        PartitionKey partitionKey = new(dataObject.PartitionKey);
+        await container.CreateItemAsync(dataObject, partitionKey).ConfigureAwait(false);
     }
 }

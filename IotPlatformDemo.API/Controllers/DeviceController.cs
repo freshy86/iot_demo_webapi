@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using IotPlatformDemo.Application.EventStore;
+using IotPlatformDemo.Domain.Events.Device;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Devices;
@@ -9,19 +11,12 @@ namespace IotPlatformDemo.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("[controller]")]
-public class DeviceController : ControllerBase
+public class DeviceController(
+    RegistryManager registryManager,
+    IHttpContextAccessor contextAccessor,
+    IEventStore eventStore)
+    : ControllerBase
 {
-    private readonly RegistryManager _registryManager;
-    private readonly IHttpContextAccessor _contextAccessor;
-    
-    public DeviceController(RegistryManager registryManager,
-        IHttpContextAccessor contextAccessor)
-    {
-        _registryManager = registryManager;
-        _contextAccessor = contextAccessor;
-        //_eventStore = eventStore;
-    }
-
     [HttpPost]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = "AzureAD:Scopes:Write",
@@ -30,7 +25,7 @@ public class DeviceController : ControllerBase
     public async Task<IActionResult> AddNewDevice()
     {
         var deviceId = Guid.NewGuid();
-        var userId = _contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (userId == null)
         {
@@ -38,10 +33,10 @@ public class DeviceController : ControllerBase
         }
 
         Device newDevice = new($"{userId}-{deviceId}");
-        var addedDevice = await _registryManager.AddDeviceAsync(newDevice);
+        var addedDevice = await registryManager.AddDeviceAsync(newDevice);
 
         Console.WriteLine($"Added new IoT device with ID: {addedDevice.Id}");
-        //_eventStore.Append(new DeviceCreatedEvent(addedDevice.Id, userId, "myNewDevice"));
+        await eventStore.Append(new DeviceCreatedEvent(addedDevice.Id, userId));
         
         return Ok();
         //Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
