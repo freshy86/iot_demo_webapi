@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     var scopes = new Dictionary<string, string>
     {
-        { configuration["SwaggerAuth:Scope"], "ReadWrite" },
+        { configuration["SwaggerAuth:Scope"] ?? "ReadWrite", "ReadWrite" },
         { "openid", "openid" },
         { "profile", "profile" }
     };

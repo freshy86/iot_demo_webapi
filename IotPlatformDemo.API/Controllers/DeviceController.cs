@@ -1,5 +1,7 @@
 using System.Net;
 using System.Security.Claims;
+using IotPlatformDemo.Domain.Events;
+using IotPlatformDemo.Domain.Events.Device;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Devices;
@@ -11,15 +13,16 @@ using Microsoft.Identity.Web.Resource;
 public class DeviceController : ControllerBase
 {
     private readonly RegistryManager _registryManager;
-
     private readonly IHttpContextAccessor _contextAccessor;
-
+    private readonly IEventStore _eventStore;
+    
     public DeviceController(RegistryManager registryManager,
-                            IHttpContextAccessor contextAccessor
-                            )
+                            IHttpContextAccessor contextAccessor,
+                            IEventStore eventStore)
     {
         _registryManager = registryManager;
         _contextAccessor = contextAccessor;
+        _eventStore = eventStore;
     }
 
     [HttpPost]
@@ -41,6 +44,8 @@ public class DeviceController : ControllerBase
         var addedDevice = await _registryManager.AddDeviceAsync(newDevice);
 
         Console.WriteLine($"Added new IoT device with ID: {addedDevice.Id}");
+        _eventStore.Append(new DeviceCreatedEvent(addedDevice.Id, userId, "myNewDevice"));
+        
         return Ok();
         //Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
     }
