@@ -21,7 +21,7 @@ public class CosmosDbEventStore(CosmosClient cosmosClient, string databaseName) 
     public async Task Append(Event eventToAdd)
     {
         var container = GetContainerForEvent(eventToAdd);
-        DataObject<Event> dataObject = new($"{eventToAdd.Id}", eventToAdd.PartitionKey, eventToAdd, "deviceEvent");
+        DataObject<Event> dataObject = new($"{eventToAdd.Id}", eventToAdd.PartitionKey, eventToAdd);
         PartitionKey partitionKey = new(dataObject.PartitionKey);
         await container.CreateItemAsync(dataObject, partitionKey).ConfigureAwait(false);
     }

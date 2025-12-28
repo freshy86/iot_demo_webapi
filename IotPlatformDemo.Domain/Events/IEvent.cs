@@ -6,6 +6,6 @@ namespace IotPlatformDemo.Domain.Events;
 public interface IEvent : IContainerObject
 {
     public Guid Id { get; }
-    public string Action { get; }
+    public Action Action { get; }
     public string Name { get; }
 }
