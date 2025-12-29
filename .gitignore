@@ -33,6 +33,7 @@ TestResults/
 .env
 .env.local
 appsettings.Development.json
+local.settings.json
 
 # IDE
 .DS_Store
