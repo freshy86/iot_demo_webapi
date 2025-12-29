@@ -76,4 +76,5 @@ jobs:
           app-name: 'svfr-iot-fullstack-webapi'
           slot-name: 'Production'
           package: .
+          clean: true
           
