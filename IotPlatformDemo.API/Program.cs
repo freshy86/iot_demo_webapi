@@ -1,5 +1,6 @@
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Domain;
+using IotPlatformDemo.Domain.Container;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Cosmos;
@@ -25,14 +26,16 @@ var cOpts = new CosmosClientOptions
 };
 var containers = new List<(string, string)>
 {
-    (configuration.GetValue<string>("CosmosDb:DbWrite")!, "devices")
+    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Data.ToString())
 };
 
 var cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetValue<string>("CosmosDb:Uri"),
     configuration.GetValue<string>("CosmosDb:Key"), containers, cOpts).Result;
+var writeDataContainer= cosmosClient.GetContainer(configuration.GetValue<string>("CosmosDb:DbWrite"),
+    ContainerType.Data.ToString());
 
 builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configuration.GetValue<string>("iothub:connectionString")))
-    .AddSingleton<IEventStore>(new CosmosDbEventStore(cosmosClient, configuration.GetValue<string>("CosmosDb:DbWrite")!))
+    .AddSingleton<IEventStore>(new CosmosDbEventStore(writeDataContainer!))
     .AddHttpContextAccessor()
     .AddControllers();
 

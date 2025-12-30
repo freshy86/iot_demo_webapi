@@ -2,7 +2,7 @@ namespace IotPlatformDemo.Domain.Container;
 
 public class ContainerType
 {
-    public static readonly ContainerType Devices = new("devices");
+    public static readonly ContainerType Data = new("data");
     
     private readonly string _containerName;
 
