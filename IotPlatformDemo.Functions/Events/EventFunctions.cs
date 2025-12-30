@@ -13,6 +13,7 @@ public class EventFunctions(ILogger<EventFunctions> logger)
             containerName:"events",
             Connection = "CosmosDb",
             LeaseContainerName = "leases",
+            LeaseContainerPrefix = "events",
             CreateLeaseContainerIfNotExists = true)] List<DataObject<Event>> dataObjects,
         FunctionContext context)
     {
