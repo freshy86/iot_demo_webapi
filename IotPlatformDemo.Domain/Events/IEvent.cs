@@ -7,5 +7,5 @@ public interface IEvent : IContainerObject
 {
     public Guid Id { get; }
     public Action Action { get; }
-    public string Name { get; }
+    public EventType Type { get; }
 }
