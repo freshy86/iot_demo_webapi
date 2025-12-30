@@ -1,8 +1,6 @@
 using IotPlatformDemo.Application.EventStore;
-using IotPlatformDemo.Domain;
 using IotPlatformDemo.Domain.Container;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Devices;
 using Microsoft.Identity.Web;
