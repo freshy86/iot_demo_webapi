@@ -24,16 +24,18 @@ var cOpts = new CosmosClientOptions
 };
 var containers = new List<(string, string)>
 {
-    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Data.ToString())
+    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Data.ToString()),
+    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Events.ToString()),
+    (configuration.GetValue<string>("CosmosDb:DbRead")!, ContainerType.Data.ToString())
 };
 
 var cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetValue<string>("CosmosDb:Uri"),
     configuration.GetValue<string>("CosmosDb:Key"), containers, cOpts).Result;
-var writeDataContainer= cosmosClient.GetContainer(configuration.GetValue<string>("CosmosDb:DbWrite"),
-    ContainerType.Data.ToString());
+var writeEventsContainer= cosmosClient.GetContainer(configuration.GetValue<string>("CosmosDb:DbWrite"),
+    ContainerType.Events.ToString());
 
 builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configuration.GetValue<string>("iothub:connectionString")))
-    .AddSingleton<IEventStore>(new CosmosDbEventStore(writeDataContainer!))
+    .AddSingleton<IEventStore>(new CosmosDbEventStore(writeEventsContainer!))
     .AddHttpContextAccessor()
     .AddControllers();
 
