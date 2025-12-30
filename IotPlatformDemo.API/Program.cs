@@ -29,12 +29,12 @@ var containers = new List<(string, string)>
     (configuration.GetValue<string>("CosmosDb:DbRead")!, ContainerType.Data.ToString())
 };
 
-var cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetValue<string>("CosmosDb:Uri"),
-    configuration.GetValue<string>("CosmosDb:Key"), containers, cOpts).Result;
+var cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetValue<string>("CosmosDb:ConnectionString"),
+    containers, cOpts).Result;
 var writeEventsContainer= cosmosClient.GetContainer(configuration.GetValue<string>("CosmosDb:DbWrite"),
     ContainerType.Events.ToString());
 
-builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configuration.GetValue<string>("iothub:connectionString")))
+builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configuration.GetValue<string>("IotHub:ConnectionString")))
     .AddSingleton<IEventStore>(new CosmosDbEventStore(writeEventsContainer!))
     .AddHttpContextAccessor()
     .AddControllers();
