@@ -8,7 +8,7 @@
             },
             "enableLiveMetricsFilters": true
         },
-        "fileLoggingMode": "always",
+        "fileLoggingMode": "debugOnly",
         "logLevel": {
             "default": "Debug"
         },

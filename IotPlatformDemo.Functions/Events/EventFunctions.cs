@@ -10,10 +10,10 @@ public class EventFunctions(ILogger<EventFunctions> logger)
     [Function(nameof(EventToServiceBusForwarding))]
     public void EventToServiceBusForwarding([CosmosDBTrigger(
             databaseName: "iot_demo_write",
-            containerName:"events",
+            containerName: "events",
             Connection = "CosmosDb",
             LeaseContainerName = "leases",
-            LeaseContainerPrefix = "events",
+            LeaseContainerPrefix = $"events{ChangeFeedContainerPrefixConstants.Extension}",
             CreateLeaseContainerIfNotExists = true)] List<DataObject<Event>> dataObjects,
         FunctionContext context)
     {
