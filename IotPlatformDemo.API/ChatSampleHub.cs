@@ -23,11 +23,11 @@ public class ChatSampleHub : Hub
         return base.OnConnectedAsync();
     }
 
-    public Task BroadcastMessage(string name, string message) =>
+    /*public Task BroadcastMessage(string name, string message) =>
         //user id from token is in Context.UserIdentifier here
         Clients.All.SendAsync("broadcastMessage", name, message);
 
     public Task Echo(string name, string message) =>
         Clients.Client(Context.ConnectionId)
-            .SendAsync("echo", name, $"{message} (echo from server)");
+            .SendAsync("echo", name, $"{message} (echo from server)");*/
 }

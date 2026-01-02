@@ -20,13 +20,12 @@ public class EventFunctions(ILogger<EventFunctions> logger, IServiceHubContext s
         FunctionContext context)
     {
         logger.LogInformation("C# Cosmos DB trigger function processed {count} documents.", dataObjects?.Count ?? 0);
-        await serviceHubContext.Clients.All.SendAsync("BroadcastMessage", "system", "hallo");
-        //await serviceHubContext.Clients.Clients(["O-wvhueJ4B-SpU3q3KhhcQx7A16wd02"]).SendAsync("echo", "system", "y0l0");
         if (dataObjects is not null && dataObjects.Any())
         {
-            foreach (var obj in dataObjects)
+            foreach (var e in dataObjects.Select(obj => obj.Data))
             {
-                logger.LogInformation("Data: {desc}", obj.Data);
+                logger.LogInformation("Data: {desc}", e);
+                await serviceHubContext.Clients.User(e.UserId).SendAsync("echo", "system", $"Event received: {e.Type}, {e.Action} for user: {e.UserId}");
             }
         }
     }
