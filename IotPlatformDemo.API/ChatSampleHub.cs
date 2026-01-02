@@ -11,7 +11,20 @@ namespace IotPlatformDemo.API;
 )]
 public class ChatSampleHub : Hub
 {
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        Console.WriteLine($"Disconnected: {Context.UserIdentifier}, exception: {exception?.Message}");
+        return base.OnDisconnectedAsync(exception);
+    }
+
+    public override Task OnConnectedAsync()
+    {
+        Console.WriteLine($"Connected: {Context.UserIdentifier} with connection: {Context.ConnectionId}");
+        return base.OnConnectedAsync();
+    }
+
     public Task BroadcastMessage(string name, string message) =>
+        //user id from token is in Context.UserIdentifier here
         Clients.All.SendAsync("broadcastMessage", name, message);
 
     public Task Echo(string name, string message) =>

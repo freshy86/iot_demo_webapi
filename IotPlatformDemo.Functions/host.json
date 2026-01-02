@@ -10,10 +10,7 @@
         },
         "fileLoggingMode": "debugOnly",
         "logLevel": {
-            "default": "Debug"
-        },
-        "console": {
-            "isEnabled": true
+            "default": "Information"
         }
     }
 }
