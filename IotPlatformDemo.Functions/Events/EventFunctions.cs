@@ -1,8 +1,5 @@
-using Azure.Core;
+using System.Dynamic;
 using Azure.Messaging.ServiceBus;
-using IotPlatformDemo.Application;
-using IotPlatformDemo.Domain.Events;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.Logging;
@@ -22,7 +19,7 @@ public class EventFunctions(ILogger<EventFunctions> logger,
             Connection = "CosmosDb",
             LeaseContainerName = "leases",
             LeaseContainerPrefix = $"events{LeaseContainerPrefixConstants.Extension}",
-            CreateLeaseContainerIfNotExists = true)] List<Event> events,
+            CreateLeaseContainerIfNotExists = true)] List<ExpandoObject> events,
         FunctionContext context, CancellationToken cancellationToken)
     {
         try
@@ -34,25 +31,24 @@ public class EventFunctions(ILogger<EventFunctions> logger,
             
             if (events is not null && events.Count != 0)
             {
-                foreach (var e in events)
+                foreach (var e in events as dynamic)
                 {
-                    logger.LogInformation("Data: {desc}", e);
-                    var partitionKey = e.PartitionKey;
+                    var partitionKey = e.partitionKey;
                     var serviceBusMessage = new ServiceBusMessage(JsonConvert.SerializeObject(e))
                     {
                         ContentType = "application/json;charset=utf-8",
-                        Subject = e.Type.ToString(),
-                        MessageId = e.Id.ToString(),
+                        Subject = e.type.ToString(),
+                        MessageId = e.id.ToString(),
                         SessionId = partitionKey
                     };
 
-                    if (serviceBusMessages.TryGetValue(partitionKey, out var value))
+                    if (serviceBusMessages.ContainsKey(partitionKey))
                     {
-                        value.Add(serviceBusMessage);
+                        serviceBusMessages[partitionKey].Add(serviceBusMessage);
                     }
                     else
                     {
-                        serviceBusMessages[partitionKey] = [serviceBusMessage];
+                        serviceBusMessages[partitionKey] = new List<ServiceBusMessage> { serviceBusMessage };
                     }
 
                     eventsCount += 1;
