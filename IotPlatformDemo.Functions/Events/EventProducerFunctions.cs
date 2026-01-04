@@ -44,6 +44,7 @@ public class EventProducerFunctions(ILogger<EventProducerFunctions> logger,
                         SessionId = partitionKey
                     };
                     serviceBusMessage.ApplicationProperties.Add(nameof(Event.Version), e.version);
+                    serviceBusMessage.ApplicationProperties.Add(nameof(Event.Type), e.type);
 
                     if (serviceBusMessages.TryGetValue(partitionKey, out var value))
                     {

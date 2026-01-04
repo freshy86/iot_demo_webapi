@@ -1,9 +1,11 @@
 using IotPlatformDemo.Domain.AggregateRoots.Device;
+using IotPlatformDemo.Domain.Events.Base.V1;
 using IotPlatformDemo.Domain.Events.Device.V1;
-using IotPlatformDemo.Functions.Events;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace IotPlatformDemo.Functions.EventHandler.Device;
 
@@ -11,18 +13,35 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
 {
     [Function(nameof(Device_RunEventOrchestrator))]
     public async Task Device_RunEventOrchestrator(
-        [OrchestrationTrigger] TaskOrchestrationContext context, DeviceEvent deviceEvent)
+        [OrchestrationTrigger] TaskOrchestrationContext context, string eventAsString)
     {
-        var aggregateRoot = await context.CallActivityAsync<DeviceAggregateRoot>(nameof(Device_UpdateAggregateRoot), deviceEvent);
+        var aggregateRoot = await context.CallActivityAsync<DeviceAggregateRoot>(nameof(Device_UpdateAggregateRoot), 
+            eventAsString);
         await context.CallActivityAsync(nameof(Device_UpdateMaterializedViews), aggregateRoot);
     }
 
     [Function(nameof(Device_UpdateAggregateRoot))]
-    public DeviceAggregateRoot Device_UpdateAggregateRoot([ActivityTrigger] DeviceEvent deviceEvent,
+    public DeviceAggregateRoot Device_UpdateAggregateRoot([ActivityTrigger] string eventAsString,
         FunctionContext executionContext)
     {
+        var eventsAssembly = typeof(Event).Assembly;
+        var jsonObject = JsonConvert.DeserializeObject(eventAsString) as JObject;
+        var eventType = eventsAssembly.GetType($"{jsonObject!.GetValue("version")}", true)!;
+        var receivedEvent = (jsonObject.ToObject(eventType) as DeviceEvent)!;
+
+        //TODO: Get it
+        var aggregateRoot = new DeviceAggregateRoot(receivedEvent.PartitionKey);
         logger.LogInformation("Updating device aggregate root");
-        return new DeviceAggregateRoot(deviceEvent.PartitionKey);
+
+        if (eventType == typeof(DeviceCreatedEvent))
+        {
+            aggregateRoot.HandleEvent(receivedEvent as DeviceCreatedEvent);
+        } else if (eventType == typeof(DeviceRenameEvent))
+        {
+            aggregateRoot.HandleEvent(receivedEvent as DeviceRenameEvent);
+        }
+
+        return aggregateRoot;
     }
     
     [Function(nameof(Device_UpdateMaterializedViews))]

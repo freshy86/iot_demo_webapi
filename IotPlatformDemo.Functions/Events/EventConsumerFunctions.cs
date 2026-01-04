@@ -19,19 +19,19 @@ public class EventConsumerFunctions(ILogger<EventConsumerFunctions> logger)
     {
         try
         {
-            var eventsAssembly = typeof(Event).Assembly;
-            var eventType = eventsAssembly.GetType($"{message.ApplicationProperties[nameof(Event.Version)]}", true)!;
-            var e = (JsonConvert.DeserializeObject(Encoding.UTF8.GetString(message.Body), eventType) as Event)!;
+            var eventType = Enum.Parse<EventType>(message.ApplicationProperties[nameof(Event.Type)].ToString()!);
+            var eventAsString = Encoding.UTF8.GetString(message.Body);
         
-            logger.LogInformation("Event received: {e}", e);
+            logger.LogInformation("Event received: {eventType}", eventType);
 
-            if (e is DeviceCreatedEvent)
+            switch (eventType)
             {
-                var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-                    nameof(EventHandler.Device.DeviceEventHandlerFunctions.Device_RunEventOrchestrator), e);
-                logger.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
+                case EventType.DeviceEvent:
+                    await client.ScheduleNewOrchestrationInstanceAsync(
+                        nameof(EventHandler.Device.DeviceEventHandlerFunctions.Device_RunEventOrchestrator), 
+                        eventAsString);
+                    break;
             }
-
             //await serviceHubContext.Clients.User(e.UserId).SendAsync("notification", "system", $"Event received: {e.Type}, {e.Action} for user: {e.UserId}");
         }
         catch (Exception exception)

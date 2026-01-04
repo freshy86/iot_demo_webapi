@@ -42,6 +42,7 @@ public class DeviceController(
         {
             DeviceName = deviceName
         });
+        await eventStore.Append(new DeviceRenameEvent(iotDeviceId, userId, deviceName));
         
         return Ok();
         //Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
