@@ -42,6 +42,7 @@ public class EventFunctions(ILogger<EventFunctions> logger,
                         SessionId = partitionKey
                     };
 
+                    // ReSharper disable once CanSimplifyDictionaryLookupWithTryGetValue
                     if (serviceBusMessages.ContainsKey(partitionKey))
                     {
                         serviceBusMessages[partitionKey].Add(serviceBusMessage);
