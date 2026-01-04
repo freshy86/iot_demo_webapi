@@ -1,6 +1,5 @@
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Application.Notifications;
-using IotPlatformDemo.Domain.Container;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Devices;
@@ -23,17 +22,21 @@ var cOpts = new CosmosClientOptions
         IgnoreNullValues = true
     }
 };
+
+const string dataContainerName = "data";
+const string eventsContainerName = "events";
+
 var containers = new List<(string, string)>
 {
-    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Data.ToString()),
-    (configuration.GetValue<string>("CosmosDb:DbWrite")!, ContainerType.Events.ToString()),
-    (configuration.GetValue<string>("CosmosDb:DbRead")!, ContainerType.Data.ToString())
+    (configuration.GetValue<string>("CosmosDb:DbWrite")!, dataContainerName),
+    (configuration.GetValue<string>("CosmosDb:DbWrite")!, eventsContainerName),
+    (configuration.GetValue<string>("CosmosDb:DbRead")!, dataContainerName)
 };
 
 var cosmosClient = CosmosClient.CreateAndInitializeAsync(configuration.GetValue<string>("CosmosDb:ConnectionString"),
     containers, cOpts).Result;
 var writeEventsContainer= cosmosClient.GetContainer(configuration.GetValue<string>("CosmosDb:DbWrite"),
-    ContainerType.Events.ToString());
+    eventsContainerName);
 
 builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configuration.GetValue<string>("IotHub:ConnectionString")))
     .AddSingleton<IEventStore>(new CosmosDbEventStore(writeEventsContainer!))
