@@ -1,4 +1,3 @@
-using IotPlatformDemo.API;
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Application.Notifications;
 using IotPlatformDemo.Domain.Container;

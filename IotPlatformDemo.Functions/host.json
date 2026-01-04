@@ -14,6 +14,10 @@
             "storageProvider": {
                 "type": "AzureStorage"
             }
+        },
+        "serviceBus": {
+            "maxConcurrentSessions": 100,
+            "sessionIdleTimeout": "00:00:05"
         }
     }
 }

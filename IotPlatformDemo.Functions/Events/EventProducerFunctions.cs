@@ -52,7 +52,6 @@ public class EventProducerFunctions(ILogger<EventProducerFunctions> logger,
                     }
 
                     eventsCount += 1;
-                    //await serviceHubContext.Clients.User(e.UserId).SendAsync("notification", "system", $"Event received: {e.Type}, {e.Action} for user: {e.UserId}");
                 }
 
                 if (serviceBusMessages.Count > 0)
