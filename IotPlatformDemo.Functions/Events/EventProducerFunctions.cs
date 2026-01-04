@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace IotPlatformDemo.Functions.Events;
 
-public class EventFunctions(ILogger<EventFunctions> logger, 
+public class EventProducerFunctions(ILogger<EventProducerFunctions> logger, 
     IServiceHubContext signalrServiceHubContext,
     ServiceBusSender serviceBusSender)
 {

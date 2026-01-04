@@ -1,6 +1,7 @@
 using Azure.Core.Serialization;
 using Azure.Messaging.ServiceBus;
 using IotPlatformDemo.Application.Notifications;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Azure.SignalR.Management;
@@ -11,6 +12,12 @@ using Newtonsoft.Json.Serialization;
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
+
+//Due to bugs in HTTP worker and/or JSON.Net this is needed
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.AllowSynchronousIO = true;
+});
 
 builder.Services.Configure<WorkerOptions>(workerOptions =>
 {

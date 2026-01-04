@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace IotPlatformDemo.Functions.Events;
 
-public static class HelloOrchestration
+public static class EventConsumerFunctions
 {
-    [Function(nameof(HelloOrchestration))]
+    [Function(nameof(EventConsumerFunctions))]
     public static async Task<List<string>> RunOrchestrator(
         [OrchestrationTrigger] TaskOrchestrationContext context)
     {
-        ILogger logger = context.CreateReplaySafeLogger(nameof(HelloOrchestration));
+        ILogger logger = context.CreateReplaySafeLogger(nameof(EventConsumerFunctions));
         logger.LogInformation("Saying hello.");
         var outputs = new List<string>();
 
@@ -43,7 +43,7 @@ public static class HelloOrchestration
 
         // Function input comes from the request content.
         string instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
-            nameof(HelloOrchestration));
+            nameof(EventConsumerFunctions));
 
         logger.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
 
