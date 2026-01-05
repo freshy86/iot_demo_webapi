@@ -27,12 +27,11 @@ public class EventConsumerFunctions(ILogger<EventConsumerFunctions> logger)
             switch (eventType)
             {
                 case EventType.DeviceEvent:
-                    await client.ScheduleNewOrchestrationInstanceAsync(
-                        nameof(EventHandler.Device.DeviceEventHandlerFunctions.Device_RunEventOrchestrator), 
+                    var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+                        nameof(EventHandler.Device.DeviceEventHandlerFunctions.Device_RunEventOrchestrator),
                         eventAsString);
                     break;
             }
-            //await serviceHubContext.Clients.User(e.UserId).SendAsync("notification", "system", $"Event received: {e.Type}, {e.Action} for user: {e.UserId}");
         }
         catch (Exception exception)
         {
