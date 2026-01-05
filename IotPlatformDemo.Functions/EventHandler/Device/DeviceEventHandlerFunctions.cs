@@ -32,14 +32,7 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         //TODO: Get it
         var aggregateRoot = new DeviceAggregateRoot(receivedEvent.PartitionKey);
         logger.LogInformation("Updating device aggregate root");
-
-        if (eventType == typeof(DeviceCreatedEvent))
-        {
-            aggregateRoot.HandleEvent(receivedEvent as DeviceCreatedEvent);
-        } else if (eventType == typeof(DeviceRenameEvent))
-        {
-            aggregateRoot.HandleEvent(receivedEvent as DeviceRenameEvent);
-        }
+        receivedEvent.Apply(aggregateRoot);
 
         return aggregateRoot;
     }
