@@ -9,7 +9,7 @@ public record OrchestrationStatus
     public enum StatusCode
     {
         Start,
-        Finish,
+        Success,
         Fail
     }
 

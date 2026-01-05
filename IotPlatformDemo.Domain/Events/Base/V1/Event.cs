@@ -7,7 +7,7 @@ public class Event(string userId, EventType type, Action action, string partitio
 { 
     [JsonProperty] public string PartitionKey { get; } = partitionKey;
     [JsonProperty] public string UserId { get; } = userId;
-    [JsonProperty] public Guid Id { get; } = Guid.NewGuid();
+    [JsonProperty] public string Id { get; } = Guid.NewGuid().ToString("N");
     [JsonProperty] public Action Action { get; } = action;
     [JsonProperty] public EventType Type { get; } = type;
     [JsonProperty] public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;

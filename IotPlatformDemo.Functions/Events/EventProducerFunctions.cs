@@ -40,11 +40,13 @@ public class EventProducerFunctions(ILogger<EventProducerFunctions> logger,
                     {
                         ContentType = "application/json;charset=utf-8",
                         Subject = e.type.ToString(),
-                        MessageId = e.id.ToString(),
+                        MessageId = e.id,
                         SessionId = partitionKey
                     };
                     serviceBusMessage.ApplicationProperties.Add(nameof(Event.Version), e.version);
                     serviceBusMessage.ApplicationProperties.Add(nameof(Event.Type), e.type);
+                    serviceBusMessage.ApplicationProperties.Add(nameof(Event.Id), e.id);
+                    serviceBusMessage.ApplicationProperties.Add(nameof(Event.UserId), e.userId);
 
                     if (serviceBusMessages.TryGetValue(partitionKey, out var value))
                     {

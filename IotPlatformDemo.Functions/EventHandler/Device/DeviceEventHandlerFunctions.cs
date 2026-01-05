@@ -14,36 +14,50 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
 {
     [Function(nameof(Device_RunEventOrchestrator))]
     public async Task Device_RunEventOrchestrator(
-        [OrchestrationTrigger] TaskOrchestrationContext context, string eventAsString)
+        [OrchestrationTrigger] TaskOrchestrationContext context, (string, string) userIdEventStringTuple)
     {
-        var jsonObject = (JsonConvert.DeserializeObject(eventAsString) as JObject)!;
-        var userId = jsonObject.GetValue(nameof(Event.UserId))!.ToString();
-        
-        await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+        var userId = userIdEventStringTuple.Item1;
+        var eventAsString = userIdEventStringTuple.Item2;
+        try
         {
-            Status = OrchestrationStatus.StatusCode.Start,
-            UserId = userId,
-            OrchestrationId = context.InstanceId
-        });
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            {
+                Status = OrchestrationStatus.StatusCode.Start,
+                UserId = userId,
+                OrchestrationId = context.InstanceId
+            });
         
-        var aggregateRoot = await context.CallActivityAsync<DeviceAggregateRoot>(nameof(Device_UpdateAggregateRoot), 
-            eventAsString);
-        await context.CallActivityAsync(nameof(Device_UpdateMaterializedViews), aggregateRoot);
+            var aggregateRoot = await context.CallActivityAsync<DeviceAggregateRoot>(nameof(Device_UpdateAggregateRoot), 
+                eventAsString);
+            await context.CallActivityAsync(nameof(Device_UpdateMaterializedViews), aggregateRoot);
         
-        await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            {
+                Status = OrchestrationStatus.StatusCode.Success,
+                UserId = userId,
+                OrchestrationId = context.InstanceId
+            });
+        }
+        catch (Exception e)
         {
-            Status = OrchestrationStatus.StatusCode.Finish,
-            UserId = userId,
-            OrchestrationId = context.InstanceId
-        });
+            logger.LogError(e, "Orchestration failed.");
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            {
+                Status = OrchestrationStatus.StatusCode.Fail,
+                UserId = userId,
+                OrchestrationId = context.InstanceId
+            });
+            throw;
+        }
     }
 
     [Function(nameof(Device_UpdateAggregateRoot))]
-    public DeviceAggregateRoot Device_UpdateAggregateRoot([ActivityTrigger] JObject jsonObject,
+    public DeviceAggregateRoot Device_UpdateAggregateRoot([ActivityTrigger] string eventAsString,
         FunctionContext executionContext)
     {
         var eventsAssembly = typeof(Event).Assembly;
-        var eventType = eventsAssembly.GetType($"{jsonObject!.GetValue("version")}", true)!;
+        var jsonObject = (JsonConvert.DeserializeObject(eventAsString) as JObject)!;
+        var eventType = eventsAssembly.GetType($"{jsonObject.GetValue("version")}", true)!;
         var receivedEvent = (jsonObject.ToObject(eventType) as DeviceEvent)!;
 
         //TODO: Get it

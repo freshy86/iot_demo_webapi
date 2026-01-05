@@ -11,6 +11,7 @@ namespace IotPlatformDemo.API.Controllers;
 [Authorize]
 [ApiController]
 [Consumes("application/json")]
+[Produces("application/json")]
 [Route("[controller]")]
 public class DeviceController(
     RegistryManager registryManager,
@@ -37,14 +38,15 @@ public class DeviceController(
         //Device newDevice = new(iotDeviceId);
         //var addedDevice = await registryManager.AddDeviceAsync(newDevice);
 
-        Console.WriteLine($"Added new IoT device with ID: {iotDeviceId}");
-        await eventStore.Append(new DeviceCreatedEvent(iotDeviceId, userId)
+        var createDeviceEvent = new DeviceCreatedEvent(iotDeviceId, userId)
         {
             DeviceName = deviceName
-        });
-        await eventStore.Append(new DeviceRenameEvent(iotDeviceId, userId, deviceName));
+        };
         
-        return Ok();
+        Console.WriteLine($"Added new IoT device with ID: {iotDeviceId}");
+        await eventStore.Append(createDeviceEvent);
+        
+        return Ok(createDeviceEvent.Id);
         //Console.WriteLine($"Device Key: {addedDevice.Authentication.SymmetricKey.PrimaryKey}");
     }
 }

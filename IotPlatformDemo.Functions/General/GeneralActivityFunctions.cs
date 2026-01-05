@@ -12,6 +12,7 @@ public class GeneralActivityFunctions(ILogger<GeneralActivityFunctions> logger, 
         FunctionContext executionContext)
     {
         logger.LogInformation("Signal status to frontend: {OrchestrationStatus}", status);
-        await signalrHubContext.Clients.User(status.UserId).SendAsync("notification", status.OrchestrationId, status.Status);
+        await signalrHubContext.Clients.User(status.UserId).SendAsync("notification", 
+            status);
     }
 }

@@ -3,6 +3,7 @@ using Azure.Messaging.ServiceBus;
 using IotPlatformDemo.Domain.Events.Base.V1;
 using IotPlatformDemo.Domain.Events.Device.V1;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -21,15 +22,19 @@ public class EventConsumerFunctions(ILogger<EventConsumerFunctions> logger)
         {
             var eventType = Enum.Parse<EventType>(message.ApplicationProperties[nameof(Event.Type)].ToString()!);
             var eventAsString = Encoding.UTF8.GetString(message.Body);
-        
+            var userId = message.ApplicationProperties[nameof(Event.UserId)].ToString()!;
+            var eventId = message.ApplicationProperties[nameof(Event.Id)].ToString()!;
+            
             logger.LogInformation("Event received: {eventType}", eventType);
 
             switch (eventType)
             {
                 case EventType.DeviceEvent:
-                    var instanceId = await client.ScheduleNewOrchestrationInstanceAsync(
+                    await client.ScheduleNewOrchestrationInstanceAsync(
                         nameof(EventHandler.Device.DeviceEventHandlerFunctions.Device_RunEventOrchestrator),
-                        eventAsString);
+                        Tuple.Create(userId, eventAsString),
+                        new StartOrchestrationOptions(eventId)
+                        );
                     break;
             }
         }

@@ -90,12 +90,13 @@
         }
 
         function bindConnectionMessage(connection) {
-            var messageCallback = function (name, message) {
-                if (!message) return;
+            var messageCallback = function (status) {
+                console.log(status);
+                if (!status) return;
                 // Html encode display name and message.
-                var encodedName = name;
-                var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                appendMessage(encodedName, encodedMsg);
+                //var encodedName = "";
+                //var encodedMsg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                appendMessage("", JSON.stringify(status));
             };
             // Create a function that the hub can call to broadcast messages.
             connection.on("notification", messageCallback);
