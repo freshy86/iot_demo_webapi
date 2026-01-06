@@ -19,6 +19,23 @@ public class DeviceController(
     IEventStore eventStore)
     : ControllerBase
 {
+    [HttpPut]
+    [RequiredScopeOrAppPermission(
+        RequiredScopesConfigurationKey = "AzureAD:Scopes:Write",
+        RequiredAppPermissionsConfigurationKey = "AzureAD:AppPermissions:Write"
+    )]
+    public async Task<IActionResult> RenameDevice(string deviceId, string newDeviceName)
+    {
+        var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null)
+        {
+            return BadRequest("User not found");
+        }
+        var renameDeviceEvent = new DeviceRenameEvent(deviceId, userId, newDeviceName);
+        await eventStore.Append(renameDeviceEvent);
+        return Ok(renameDeviceEvent.Id);
+    }
+
     [HttpPost]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = "AzureAD:Scopes:Write",
