@@ -1,16 +1,20 @@
 using IotPlatformDemo.Domain.AggregateRoots.Device;
 using IotPlatformDemo.Domain.Events.Device.V1;
+using IotPlatformDemo.Domain.MaterializedViews;
 using IotPlatformDemo.Functions.Events;
 using IotPlatformDemo.Functions.General;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.DurableTask;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Action = IotPlatformDemo.Domain.Events.Action;
 
 namespace IotPlatformDemo.Functions.EventHandler.Device;
 
-public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> logger, Container dataContainer)
+public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> logger, 
+    [FromKeyedServices(ContainerType.Write)] Container writeContainer,
+    [FromKeyedServices(ContainerType.Read)] Container readContainer)
 {
     [Function(nameof(Device_RunEventOrchestrator))]
     public async Task Device_RunEventOrchestrator(
@@ -70,7 +74,7 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         }
         else
         {
-            aggregateRoot = await dataContainer.ReadItemAsync<DeviceAggregateRoot>(receivedEvent.DeviceId,
+            aggregateRoot = await writeContainer.ReadItemAsync<DeviceAggregateRoot>(receivedEvent.DeviceId,
                 new PartitionKey(receivedEvent.DeviceId), null, executionContext.CancellationToken);
         }
 
@@ -87,20 +91,43 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
             IfMatchEtag = aggregateRoot.ETag
         };
 
-        aggregateRoot = await dataContainer.UpsertItemAsync(aggregateRoot, new PartitionKey(receivedEvent.DeviceId), requestOptions,
+        aggregateRoot = await writeContainer.UpsertItemAsync(aggregateRoot, new PartitionKey(receivedEvent.DeviceId), requestOptions,
             executionContext.CancellationToken);
 
         return aggregateRoot;
     }
     
     [Function(nameof(Device_UpdateMaterializedViews))]
-    public void Device_UpdateMaterializedViews([ActivityTrigger] (DeviceAggregateRoot, string) aggregateRootEventAsStringTuple,
+    public async Task Device_UpdateMaterializedViews([ActivityTrigger] (DeviceAggregateRoot, string) aggregateRootEventAsStringTuple,
         FunctionContext executionContext)
     {
+        var aggregateRoot = aggregateRootEventAsStringTuple.Item1;
         var eventString = aggregateRootEventAsStringTuple.Item2;
         var receivedEvent = eventString.DeserializeEvent<DeviceEvent>();
-        //Task.Delay(3000).Wait();
-        //throw new Exception("hmm!");
+
+        var viewId = DeviceView.IdPrefix + aggregateRoot.Id;
+        var partitionKey = new PartitionKey(viewId);
+        
+        DeviceView? deviceView;
+        try
+        {
+            deviceView = await readContainer.ReadItemAsync<DeviceView>(viewId,
+                partitionKey);
+        }
+        catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            deviceView = new DeviceView(viewId);
+        }
+
+        var requestOptions = new ItemRequestOptions
+        {
+            EnableContentResponseOnWrite = false
+        };
+        
         logger.LogInformation("Updating device materialized views");
+        aggregateRoot.ApplyTo(deviceView);
+        
+        await readContainer.UpsertItemAsync(deviceView, partitionKey, requestOptions);
+
     }
 }

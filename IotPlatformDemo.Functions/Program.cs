@@ -1,6 +1,7 @@
 using Azure.Core.Serialization;
 using Azure.Messaging.ServiceBus;
 using IotPlatformDemo.Application.Notifications;
+using IotPlatformDemo.Functions.General;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
@@ -50,17 +51,20 @@ var cOpts = new CosmosClientOptions
 
 var containers = new List<(string, string)>
 {
-    ("iot_demo_write", "data")
+    ("iot_demo_write", "data"),
+    ("iot_demo_read", "data")
 };
 
 var cosmosClient = CosmosClient.CreateAndInitializeAsync(builder.Configuration.GetSection("CosmosDb").Value,
     containers, cOpts).Result;
 var writeDataContainer = cosmosClient.GetContainer("iot_demo_write", "data");
+var readDataContainer = cosmosClient.GetContainer("iot_demo_read", "data");
 
 builder.Services.AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights()
+    .AddKeyedSingleton(ContainerType.Write, writeDataContainer)
+    .AddKeyedSingleton(ContainerType.Read, readDataContainer)
     .AddSingleton<IServiceHubContext>(signalrServiceHubContext)
-    .AddSingleton(serviceBusSender)
-    .AddSingleton(writeDataContainer);
+    .AddSingleton(serviceBusSender);
 
 builder.Build().Run();

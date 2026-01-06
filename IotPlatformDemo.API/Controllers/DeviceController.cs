@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Domain.Events.Device.V1;
+using IotPlatformDemo.Domain.MaterializedViews;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Devices;
 using Microsoft.Identity.Web.Resource;
 
@@ -16,9 +18,29 @@ namespace IotPlatformDemo.API.Controllers;
 public class DeviceController(
     RegistryManager registryManager,
     IHttpContextAccessor contextAccessor,
-    IEventStore eventStore)
+    IEventStore eventStore, 
+    Container readDataContainer)
     : ControllerBase
 {
+    [HttpGet]
+    [RequiredScopeOrAppPermission(
+        RequiredScopesConfigurationKey = "AzureAD:Scopes:Read",
+        RequiredAppPermissionsConfigurationKey = "AzureAD:AppPermissions:Read"
+    )]
+    public async Task<IActionResult> GetDevice(string deviceId)
+    {
+        var viewId = DeviceView.IdPrefix + deviceId;
+        try
+        {
+            DeviceView view = await readDataContainer.ReadItemAsync<DeviceView>(viewId, new PartitionKey(viewId));
+            return Ok(view);
+        }
+        catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return NotFound();
+        }
+    }
+    
     [HttpPut]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = "AzureAD:Scopes:Write",
