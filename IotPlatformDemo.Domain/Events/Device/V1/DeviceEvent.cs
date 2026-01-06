@@ -1,5 +1,4 @@
 using IotPlatformDemo.Domain.AggregateRoots.Device;
-using IotPlatformDemo.Domain.Events.Base.V1;
 using Newtonsoft.Json;
 
 namespace IotPlatformDemo.Domain.Events.Device.V1;

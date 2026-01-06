@@ -1,7 +1,7 @@
 using System.Dynamic;
 using System.Text;
 using Azure.Messaging.ServiceBus;
-using IotPlatformDemo.Domain.Events.Base.V1;
+using IotPlatformDemo.Domain.Events;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.SignalR.Management;
 using Microsoft.Extensions.Logging;

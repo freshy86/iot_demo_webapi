@@ -1,6 +1,6 @@
 using System;
 
-namespace IotPlatformDemo.Domain.Events.Base.V1;
+namespace IotPlatformDemo.Domain.Events;
 
 public interface IEvent
 {

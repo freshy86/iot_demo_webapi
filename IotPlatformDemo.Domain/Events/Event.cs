@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace IotPlatformDemo.Domain.Events.Base.V1;
+namespace IotPlatformDemo.Domain.Events;
 
 public class Event(string userId, EventType type, Action action, string partitionKey) : IEvent
 { 

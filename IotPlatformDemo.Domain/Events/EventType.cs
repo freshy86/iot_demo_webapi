@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace IotPlatformDemo.Domain.Events.Base.V1;
+namespace IotPlatformDemo.Domain.Events;
 
 [JsonConverter(typeof(StringEnumConverter))]
 public enum EventType

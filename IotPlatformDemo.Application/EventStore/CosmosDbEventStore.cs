@@ -1,4 +1,4 @@
-using IotPlatformDemo.Domain.Events.Base.V1;
+using IotPlatformDemo.Domain.Events;
 using Microsoft.Azure.Cosmos;
 
 namespace IotPlatformDemo.Application.EventStore;

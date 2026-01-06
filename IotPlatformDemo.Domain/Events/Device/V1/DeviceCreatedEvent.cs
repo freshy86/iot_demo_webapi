@@ -1,7 +1,7 @@
 using System;
 using IotPlatformDemo.Domain.AggregateRoots.Device;
 using Newtonsoft.Json;
-using Action = IotPlatformDemo.Domain.Events.Base.V1.Action;
+using Action = IotPlatformDemo.Domain.Events.Action;
 
 namespace IotPlatformDemo.Domain.Events.Device.V1;
 
