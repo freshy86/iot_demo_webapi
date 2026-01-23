@@ -22,6 +22,7 @@ public class DeviceController(
     Container readDataContainer)
     : ControllerBase
 {
+    [Route("{deviceId}")]
     [HttpGet]
     [RequiredScopeOrAppPermission(
         RequiredScopesConfigurationKey = "AzureAD:Scopes:Read",
