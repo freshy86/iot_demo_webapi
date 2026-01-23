@@ -8,7 +8,7 @@ namespace IotPlatformDemo.Functions.General;
 public class GeneralActivityFunctions(ILogger<GeneralActivityFunctions> logger, IServiceHubContext signalrHubContext)
 {
     [Function(nameof(General_SignalOrchestrationStatusToFrontends))]
-    public async Task General_SignalOrchestrationStatusToFrontends([ActivityTrigger] OrchestrationStatus status,
+    public async Task General_SignalOrchestrationStatusToFrontends([ActivityTrigger] ClientNotification status,
         FunctionContext executionContext)
     {
         logger.LogInformation("Signal status to frontend: {OrchestrationStatus}", status);

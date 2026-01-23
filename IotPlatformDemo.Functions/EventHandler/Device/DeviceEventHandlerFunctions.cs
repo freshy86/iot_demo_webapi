@@ -24,9 +24,9 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         var eventString = userIdEventStringTuple.Item2;
         try
         {
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
             {
-                Status = OrchestrationStatus.StatusCode.Start,
+                Status = ClientNotification.NotificationStatus.Start,
                 UserId = userId,
                 OrchestrationId = context.InstanceId
             });
@@ -40,9 +40,9 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
             await context.CallActivityAsync(nameof(Device_UpdateMaterializedViews), (aggregateRoot, eventString),
                 options);
         
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
             {
-                Status = OrchestrationStatus.StatusCode.Success,
+                Status = ClientNotification.NotificationStatus.Success,
                 UserId = userId,
                 OrchestrationId = context.InstanceId,
                 Result = aggregateRoot.Id
@@ -51,9 +51,9 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         catch (Exception e)
         {
             logger.LogError(e, "Orchestration failed.");
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new OrchestrationStatus
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
             {
-                Status = OrchestrationStatus.StatusCode.Fail,
+                Status = ClientNotification.NotificationStatus.Fail,
                 UserId = userId,
                 OrchestrationId = context.InstanceId
             });
