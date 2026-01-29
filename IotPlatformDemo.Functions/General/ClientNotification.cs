@@ -12,9 +12,17 @@ public record ClientNotification
         Success,
         Fail
     }
+    
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum NotificationContext
+    {
+        DeviceCreate,
+        DeviceRename
+    }
 
-    [JsonProperty("status")] public required NotificationStatus Status { get; init; }
+    [JsonProperty("status")] public NotificationStatus Status { get; set; } = NotificationStatus.Start;
+    [JsonProperty("context")] public required NotificationContext Context { get; init; }
     [JsonProperty("userId")] public required string UserId { get; init; }
     [JsonProperty("id")] public required string OrchestrationId { get; init; }
-    [JsonProperty("result")] public object? Result { get; init; }
+    [JsonProperty("result")] public object? Result { get; set; }
 }

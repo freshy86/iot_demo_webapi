@@ -22,14 +22,17 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
     {
         var userId = userIdEventStringTuple.Item1;
         var eventString = userIdEventStringTuple.Item2;
+
+        var clientNotification = new ClientNotification
+        {
+            Context = ClientNotification.NotificationContext.DeviceCreate,
+            UserId = userId,
+            OrchestrationId = context.InstanceId
+        };
+        
         try
         {
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
-            {
-                Status = ClientNotification.NotificationStatus.Start,
-                UserId = userId,
-                OrchestrationId = context.InstanceId
-            });
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), clientNotification);
         
             var options = TaskOptions.FromRetryPolicy(new RetryPolicy(
                 maxNumberOfAttempts: 5,
@@ -39,24 +42,16 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
                 eventString, options);
             await context.CallActivityAsync(nameof(Device_UpdateMaterializedViews), (aggregateRoot, eventString),
                 options);
-        
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
-            {
-                Status = ClientNotification.NotificationStatus.Success,
-                UserId = userId,
-                OrchestrationId = context.InstanceId,
-                Result = aggregateRoot.Id
-            });
+
+            clientNotification.Result = aggregateRoot.Id;
+            clientNotification.Status = ClientNotification.NotificationStatus.Success;
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), clientNotification);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Orchestration failed.");
-            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), new ClientNotification
-            {
-                Status = ClientNotification.NotificationStatus.Fail,
-                UserId = userId,
-                OrchestrationId = context.InstanceId
-            });
+            clientNotification.Status = ClientNotification.NotificationStatus.Fail;
+            await context.CallActivityAsync(nameof(GeneralActivityFunctions.General_SignalOrchestrationStatusToFrontends), clientNotification);
             throw;
         }
     }
