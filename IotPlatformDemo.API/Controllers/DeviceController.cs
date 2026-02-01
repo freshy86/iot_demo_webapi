@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Domain.Events.Device.V1;
+using IotPlatformDemo.Domain.Helpers;
 using IotPlatformDemo.Domain.MaterializedViews;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,12 +31,11 @@ public class DeviceController(
     )]
     public async Task<IActionResult> GetDevice(string deviceId)
     {
-        var viewId = DeviceView.IdPrefix + deviceId;
         var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         
         try
         {
-            DeviceView view = await readDataContainer.ReadItemAsync<DeviceView>(viewId, new PartitionKey(userId));
+            DeviceView view = await readDataContainer.ReadItemAsync<DeviceView>(deviceId, new PartitionKey(userId));
             return Ok(view);
         }
         catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -68,7 +68,7 @@ public class DeviceController(
     )]
     public async Task<IActionResult> AddNewDevice([FromBody] string deviceName)
     {
-        var deviceId = Guid.NewGuid();
+        var deviceId = GuidHelpers.NewSimpleGuidString();
         var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (userId == null)
@@ -76,16 +76,15 @@ public class DeviceController(
             return BadRequest("User not found");
         }
 
-        var iotDeviceId = $"{userId}-{deviceId}";
         //Device newDevice = new(iotDeviceId);
         //var addedDevice = await registryManager.AddDeviceAsync(newDevice);
 
-        var createDeviceEvent = new DeviceCreatedEvent(iotDeviceId, userId)
+        var createDeviceEvent = new DeviceCreatedEvent(deviceId, userId)
         {
             DeviceName = deviceName
         };
         
-        Console.WriteLine($"Added new IoT device with ID: {iotDeviceId}");
+        Console.WriteLine($"Added new IoT device with ID: {deviceId}");
         await eventStore.Append(createDeviceEvent);
         
         return Ok(createDeviceEvent.Id);

@@ -100,7 +100,7 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         var eventString = aggregateRootEventAsStringTuple.Item2;
         var receivedEvent = eventString.DeserializeEvent<DeviceEvent>();
 
-        var viewId = DeviceView.IdPrefix + aggregateRoot.Id;
+        var viewId = aggregateRoot.Id;
         var partitionKeyValue = receivedEvent.UserId;
         var partitionKey = new PartitionKey(partitionKeyValue);
         
