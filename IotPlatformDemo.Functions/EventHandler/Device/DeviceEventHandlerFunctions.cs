@@ -101,7 +101,8 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         var receivedEvent = eventString.DeserializeEvent<DeviceEvent>();
 
         var viewId = DeviceView.IdPrefix + aggregateRoot.Id;
-        var partitionKey = new PartitionKey(viewId);
+        var partitionKeyValue = receivedEvent.UserId;
+        var partitionKey = new PartitionKey(partitionKeyValue);
         
         DeviceView? deviceView;
         try
@@ -111,7 +112,7 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         }
         catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            deviceView = new DeviceView(viewId);
+            deviceView = new DeviceView(viewId, partitionKeyValue);
         }
 
         var requestOptions = new ItemRequestOptions
@@ -123,6 +124,5 @@ public class DeviceEventHandlerFunctions(ILogger<DeviceEventHandlerFunctions> lo
         aggregateRoot.ApplyTo(deviceView);
         
         await readContainer.UpsertItemAsync(deviceView, partitionKey, requestOptions);
-
     }
 }

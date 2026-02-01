@@ -31,9 +31,11 @@ public class DeviceController(
     public async Task<IActionResult> GetDevice(string deviceId)
     {
         var viewId = DeviceView.IdPrefix + deviceId;
+        var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
         try
         {
-            DeviceView view = await readDataContainer.ReadItemAsync<DeviceView>(viewId, new PartitionKey(viewId));
+            DeviceView view = await readDataContainer.ReadItemAsync<DeviceView>(viewId, new PartitionKey(userId));
             return Ok(view);
         }
         catch (CosmosException e) when (e.StatusCode == System.Net.HttpStatusCode.NotFound)
