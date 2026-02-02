@@ -44,7 +44,8 @@ builder.Services.AddSingleton(RegistryManager.CreateFromConnectionString(configu
     .AddSingleton<IEventStore>(new CosmosDbEventStore(writeEventsContainer!))
     .AddSingleton(readDataContainer)
     .AddHttpContextAccessor()
-    .AddControllers();
+    .AddControllers()
+    .AddNewtonsoftJson();
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddMicrosoftIdentityWebApi(builder.Configuration);

@@ -43,6 +43,36 @@ public class DeviceController(
             return NotFound();
         }
     }
+
+    [HttpGet]
+    [RequiredScopeOrAppPermission(
+        RequiredScopesConfigurationKey = "AzureAD:Scopes:Read",
+        RequiredAppPermissionsConfigurationKey = "AzureAD:AppPermissions:Read"
+    )]
+    public async Task<IActionResult> GetDevices(int maxItems = 0, string? continuationToken = null)
+    {
+        var userId = contextAccessor.HttpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        try
+        {
+            var query = new QueryDefinition("SELECT * FROM data d WHERE d.type = @type")
+                .WithParameter("@type", nameof(DeviceView));
+
+            var result = await Helpers.QueryHelpers.GetMultipleItemsQuery<DeviceView>(
+                readDataContainer,
+                query, 
+                new PartitionKey(userId),
+                maxItems,
+                continuationToken
+            );
+            
+            return Ok(result);
+        }
+        catch (CosmosException e)
+        {
+            return BadRequest(e);
+        }
+    }
     
     [HttpPut]
     [RequiredScopeOrAppPermission(
