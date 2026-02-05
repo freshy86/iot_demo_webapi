@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using IotPlatformDemo.API.Helpers;
 using IotPlatformDemo.Application.EventStore;
 using IotPlatformDemo.Domain.Events.Device.V1;
 using IotPlatformDemo.Domain.Helpers;
@@ -55,24 +56,25 @@ public class DeviceController(
         
         try
         {
-            const string querySuffix = "FROM data d WHERE d.type = @type";
-
-            var totalItemsQuery = new QueryDefinition($"SELECT COUNT(1) { querySuffix }");
-            var itemsQuery = new QueryDefinition($"SELECT * { querySuffix }");
+            const string queryString = "SELECT @selection FROM data d WHERE d.type = @type";
+            var parameterDefinitions = new Dictionary<string, string>
+            {
+                { "@type", nameof(DeviceView) }
+            };
+            
+            var totalItemsQuery = QueryHelpers.PrepareQuery(queryString, "COUNT(1)", parameterDefinitions);
+            var itemsQuery = QueryHelpers.PrepareQuery(queryString, "*", parameterDefinitions);
 
             var result = await Helpers.QueryHelpers.GetMultipleItemsQuery<DeviceView>(
                 readDataContainer,
-                ApplyParameters(totalItemsQuery),
-                ApplyParameters(itemsQuery), 
+                totalItemsQuery,
+                itemsQuery, 
                 new PartitionKey(userId),
                 maxItems,
                 continuationToken
             );
             
             return Ok(result);
-
-            QueryDefinition ApplyParameters(QueryDefinition query) => query
-                .WithParameter("@type", nameof(DeviceView));
         }
         catch (CosmosException e)
         {

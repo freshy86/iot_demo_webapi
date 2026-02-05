@@ -1,12 +1,18 @@
-using System.Runtime.InteropServices.JavaScript;
 using IotPlatformDemo.API.Models;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace IotPlatformDemo.API.Helpers;
 
 public static class QueryHelpers
 {
+    private const string SelectionString = "@selection";
+
+    public static QueryDefinition PrepareQuery(string queryString, string selection, Dictionary<string, string> parameters)
+    {
+        var queryDefinition = new QueryDefinition(queryString.Replace(SelectionString, selection));
+        return parameters.Aggregate(queryDefinition, (current, keyValue) => current.WithParameter(keyValue.Key, keyValue.Value));
+    }
+    
     public static async Task<MultipleItemsResponse<T>> GetMultipleItemsQuery<T>(
         Container container,
         QueryDefinition? totalItemsCountQuery,
