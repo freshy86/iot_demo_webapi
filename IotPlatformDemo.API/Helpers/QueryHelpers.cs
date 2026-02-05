@@ -5,7 +5,7 @@ namespace IotPlatformDemo.API.Helpers;
 
 public static class QueryHelpers
 {
-    private const string SelectionString = "@selection";
+    public const string SelectionString = "@selection";
 
     public static QueryDefinition PrepareQuery(string queryString, string selection, Dictionary<string, string> parameters)
     {

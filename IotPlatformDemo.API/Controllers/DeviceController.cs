@@ -56,7 +56,7 @@ public class DeviceController(
         
         try
         {
-            const string queryString = "SELECT @selection FROM data d WHERE d.type = @type";
+            const string queryString = $"SELECT { QueryHelpers.SelectionString } FROM data d WHERE d.type = @type";
             var parameterDefinitions = new Dictionary<string, string>
             {
                 { "@type", nameof(DeviceView) }
