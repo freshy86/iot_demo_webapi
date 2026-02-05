@@ -55,22 +55,24 @@ public class DeviceController(
         
         try
         {
-            var totalItemsQuery = new QueryDefinition("SELECT COUNT(1) FROM data d WHERE d.type = @type")
-                .WithParameter("@type", nameof(DeviceView));
-            
-            var itemsQuery = new QueryDefinition("SELECT * FROM data d WHERE d.type = @type")
-                .WithParameter("@type", nameof(DeviceView));
+            const string querySuffix = "FROM data d WHERE d.type = @type";
+
+            var totalItemsQuery = new QueryDefinition($"SELECT COUNT(1) { querySuffix }");
+            var itemsQuery = new QueryDefinition($"SELECT * { querySuffix }");
 
             var result = await Helpers.QueryHelpers.GetMultipleItemsQuery<DeviceView>(
                 readDataContainer,
-                totalItemsQuery,
-                itemsQuery, 
+                ApplyParameters(totalItemsQuery),
+                ApplyParameters(itemsQuery), 
                 new PartitionKey(userId),
                 maxItems,
                 continuationToken
             );
             
             return Ok(result);
+
+            QueryDefinition ApplyParameters(QueryDefinition query) => query
+                .WithParameter("@type", nameof(DeviceView));
         }
         catch (CosmosException e)
         {

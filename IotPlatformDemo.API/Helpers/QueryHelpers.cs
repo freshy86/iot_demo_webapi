@@ -19,8 +19,14 @@ public static class QueryHelpers
 
         if (continuationToken == null)
         {
-            using var totalItemsFeed = container.GetItemQueryIterator<Dictionary<string, int>>(totalItemsCountQuery);
+            using var totalItemsFeed = container.GetItemQueryIterator<Dictionary<string, int>>(totalItemsCountQuery,
+                requestOptions: new QueryRequestOptions
+                {
+                    PartitionKey = partitionKey
+                });
+
             var totalItemsResponse = await totalItemsFeed.ReadNextAsync();
+            Console.WriteLine("Request cost: " + totalItemsResponse.RequestCharge + ", count: " + totalItemsResponse.Count);
             totalItems = totalItemsResponse.FirstOrDefault()?.Values.FirstOrDefault();
         }
         
