@@ -1,13 +1,29 @@
+using System.Runtime.InteropServices.JavaScript;
 using IotPlatformDemo.API.Models;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Azure.Devices.Common.Extensions;
 
 namespace IotPlatformDemo.API.Helpers;
 
 public static class QueryHelpers
 {
-    public static async Task<MultipleItemsResponse<T>> GetMultipleItemsQuery<T>(Container container,
-        QueryDefinition query, PartitionKey partitionKey, int maxItems = 0, string? continuationToken = null)
+    public static async Task<MultipleItemsResponse<T>> GetMultipleItemsQuery<T>(
+        Container container,
+        QueryDefinition? totalItemsCountQuery,
+        QueryDefinition query, 
+        PartitionKey partitionKey, 
+        int maxItems = 0, 
+        string? continuationToken = null)
     {
+        int? totalItems = null;
+
+        if (continuationToken == null)
+        {
+            using var totalItemsFeed = container.GetItemQueryIterator<Dictionary<string, int>>(totalItemsCountQuery);
+            var totalItemsResponse = await totalItemsFeed.ReadNextAsync();
+            totalItems = totalItemsResponse.FirstOrDefault()?.Values.FirstOrDefault();
+        }
+        
         using var feed = container.GetItemQueryIterator<T>(
             query,
             string.IsNullOrWhiteSpace(continuationToken) ? null : continuationToken,
@@ -20,9 +36,11 @@ public static class QueryHelpers
             
         var response = await feed.ReadNextAsync();
         var nextContinuationToken = feed.HasMoreResults ? response.ContinuationToken : null;
-            
+        Console.WriteLine("Request cost: " + response.RequestCharge + ", count: " + response.Count);
+        
         return new MultipleItemsResponse<T>
         {
+            TotalItems = totalItems,
             Items = response,
             ContinuationToken = nextContinuationToken
         };

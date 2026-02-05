@@ -55,12 +55,16 @@ public class DeviceController(
         
         try
         {
-            var query = new QueryDefinition("SELECT * FROM data d WHERE d.type = @type")
+            var totalItemsQuery = new QueryDefinition("SELECT COUNT(1) FROM data d WHERE d.type = @type")
+                .WithParameter("@type", nameof(DeviceView));
+            
+            var itemsQuery = new QueryDefinition("SELECT * FROM data d WHERE d.type = @type")
                 .WithParameter("@type", nameof(DeviceView));
 
             var result = await Helpers.QueryHelpers.GetMultipleItemsQuery<DeviceView>(
                 readDataContainer,
-                query, 
+                totalItemsQuery,
+                itemsQuery, 
                 new PartitionKey(userId),
                 maxItems,
                 continuationToken
